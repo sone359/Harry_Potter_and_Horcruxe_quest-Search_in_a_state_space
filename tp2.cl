@@ -3,7 +3,8 @@
             (25 36 26 24)(26 25 27)(27 26 22)(29 32 20)(32 29)(36 25)))
 
  
-(setq horcruxesDescription '(("Journal intime de Tom Jedusor" 
+(setq horcruxesDescription '(
+                              ("Journal intime de Tom Jedusor" 
                                 (methodeDestruction "Crochet de Basilic"))
                              ("Médaillon de Salazar Serpentard" 
                                 (methodeDestruction "Epée de Gryffondor"))
@@ -14,7 +15,9 @@
                              ("Nagini" 
                                 (methodeDestruction "Epée de Gryffondor"))
                              ("Diadème de Rowena Serdaigle" 
-                                (methodeDestruction "Feudeymon"))))
+                                (methodeDestruction "Feudeymon"))
+                            )
+)
 
 (setq horcruxesMap '((8 "Journal intime de Tom Jedusor")
                      (12 "Médaillon de Salazar Serpentard")
@@ -33,9 +36,16 @@
 
 ( defun methodeDestruction (horcruxe horcruxesDescription)
      
-     return (cdr (assoc horcruxe horcruxesDescription) )
+     (cadr (cadr (assoc horcruxe horcruxesDescription :test #'string= ) ))
 
 )
+
+
+
+
+
+
+
 
 (defun successeurs-valides (case carte cheminParcouru)
     (let ((successeurs NIL))
@@ -46,3 +56,4 @@
         )
     )
 )
+
