@@ -4,7 +4,8 @@
             (25 36 26 24)(26 25 27)(27 26 22)(29 32 20)(32 29)(36 25)))
 
  
-(setq horcruxesDescription '(("Journal intime de Tom Jedusor" 
+(setq horcruxesDescription '(
+                              ("Journal intime de Tom Jedusor" 
                                 (methodeDestruction "Crochet de Basilic"))
                              ("Médaillon de Salazar Serpentard" 
                                 (methodeDestruction "Epée de Gryffondor"))
@@ -15,7 +16,9 @@
                              ("Nagini" 
                                 (methodeDestruction "Epée de Gryffondor"))
                              ("Diadème de Rowena Serdaigle" 
-                                (methodeDestruction "Feudeymon"))))
+                                (methodeDestruction "Feudeymon"))
+                            )
+)
 
 (setq horcruxesMap '((8 "Journal intime de Tom Jedusor")
                      (12 "Médaillon de Salazar Serpentard")
@@ -32,20 +35,28 @@
 
 ;Fonctions de service
 
-( defun methodeDestruction (horcruxe horcruxesDescription)
-     
-     return (cdr (assoc horcruxe horcruxesDescription) )
-
-)
-
 (defun successeurs-valides (case carte cheminParcouru)
     (let ((successeurs NIL))
-        (dolist x (cdr (assoc case carte)) successeurs
+        (dolist (x (cdr (assoc case carte)) (nreverse successeurs))
             (if (not (member x cheminParcouru))
-                (append x successeurs)
+                (push x successeurs)
             )
         )
     )
 )
 
-(successeurs-valides '25 'map '(1 12 13 24))
+( defun methodeDestruction (horcruxe horcruxesDescription)
+     
+    (cadr (cadr (assoc horcruxe horcruxesDescription :test #'string=)))
+
+)
+
+(defun hasBonneArme (horcruxe methodesPossedes horcruxesDescription)
+    (if (member (methodeDestruction horcruxe horcruxesdescription) methodespossedes :test #'string=)
+        T ;On aurait directement pu renvoyer le résultat du test à la place de faire un if mais, dans le cas où l'on possède la méthode adpatée, on aurait alors renvoyé la fin de la liste et non simplement T. A noter que ces deux valeurs auraient toutefois été équivalentes dans le cas d'un test booléen
+        NIL
+    )
+)
+
+;Tests des fonctions
+;(successeurs-valides 25 map '(1 12 13 24))
