@@ -1,3 +1,4 @@
+;Donnees de test
 (setq map '((1 12 2)(2 1 3)(3 2 4)(4 3 5)(5 4 8 6)(6 5 7)(7 8 6)(8 7 5)(12 13 1)
             (13 24 12)(15 22)(20 21 29)(21 22 20)(22 27 21 15)(24 25 13)
             (25 36 26 24)(26 25 27)(27 26 22)(29 32 20)(32 29)(36 25)))
@@ -29,7 +30,7 @@
                  (20 "Sortilège de la Mort")))   
 
 
-
+;Fonctions de service
 
 ( defun methodeDestruction (horcruxe horcruxesDescription)
      
@@ -46,3 +47,5 @@
         )
     )
 )
+
+(successeurs-valides '25 'map '(1 12 13 24))
