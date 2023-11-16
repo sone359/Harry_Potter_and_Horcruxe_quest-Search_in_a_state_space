@@ -7,15 +7,16 @@ Nous lui reconnaissons toutefois un inconvénient, celui de modifier la valeur d
 RechercheProfondeur
     Paramètres :
         case : entier
-        profondeur : entier (vaut 0 au premier appel)
+        profondeur : entier (attendu valant 0 au premier appel)
         carte : liste (d'adjacence)
         carteHorcruxes : liste d'association
         carteArmes : liste d'association
         descriptionHorcruxes : liste d'association
-        cheminParcouru : liste (vide au premier appel)
-        armesPossedes : liste (vide au premier appel)
-        horcruxesDetruits : liste (vide au premier appel)
+        cheminParcouru : liste (attendue vide au premier appel)
+        armesPossedes : liste (attendue vide au premier appel)
+        horcruxesDetruits : liste (attendue vide au premier appel)
     Début :
+        #Traitement de la case active
         Ajouter case à cheminParcouru
         armeCase <- association(case, carteArmes)
         Si armeCase :
@@ -25,6 +26,8 @@ RechercheProfondeur
         Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
             Ajouter le deuxième élément de horcruxeCase à armesPossedes
         FinSi
+
+        #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
         Pour chaque successeur valide succ de case :
             Concaténer en place horcruxesDetruits et le premier élément de RechercheProfondeur(succ, profondeur + 1, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes car chacun n'est posititionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
         FinPour
@@ -32,3 +35,98 @@ RechercheProfondeur
     Fin
 
 Conscients de la contrainte de devoir passer de nombreux paramètres par défaut et soucieux d'éviter toute erreur, nous proposons une solution simulant des arguments par défauts.
+
+RechercheProfondeur2
+    Paramètres :
+        Obligatoires :
+            case : entier
+            carte : liste (d'adjacence)
+            carteHorcruxes : liste d'association
+            carteArmes : liste d'association
+            descriptionHorcruxes : liste d'association
+        Optionnels :
+            profondeur : entier
+            cheminParcouru : liste
+            armesPossedes : liste
+            horcruxesDetruits : liste
+    Début :
+        #Simulation d'attributs par défaut
+        Si non(profondeur) :
+            profondeur <- 0
+        FinSi
+        Si non(cheminParcouru) :
+            cheminParcouru <- liste vide
+        FinSi
+        Si non(armesPossedes) :
+            armesPossedes <- liste vide
+        FinSi
+        Si non(horcruxesDetruits) :
+            horcruxesDetruits <- liste vide
+        FinSi
+
+        #Traitement de la case active
+        Ajouter case à cheminParcouru
+        armeCase <- association(case, carteArmes)
+        Si armeCase :
+            Ajouter le deuxième élément de armeCase à armesPossedes
+        FinSi
+        horcruxeCase <- assoc(case, carteHorcruxes)
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
+            Ajouter le deuxième élément de horcruxeCase à armesPossedes
+        FinSi
+
+        #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
+        Pour chaque successeur valide succ de case :
+            Concaténer en place horcruxesDetruits et le premier élément de RechercheProfondeur2(succ, profondeur + 1, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes car chacun n'est posititionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
+        FinPour
+        Renvoyer (horcruxesDetruits armesPossedes)
+    Fin
+
+Cette solution impose toutefois de réaliser plusieurs tests conditionnels à chaque appel, ce qui pourrait s'avérer coûteux avec un grand nombre de successeurs pour chaque case.
+La solution optimale est alors de un compromis : la deuxième fonction appelant ensuite la première à chaque appel.
+
+RechercheProfondeur3
+    Paramètres :
+        Obligatoires :
+            case : entier
+            carte : liste (d'adjacence)
+            carteHorcruxes : liste d'association
+            carteArmes : liste d'association
+            descriptionHorcruxes : liste d'association
+        Optionnels :
+            profondeur : entier
+            cheminParcouru : liste
+            armesPossedes : liste
+            horcruxesDetruits : liste
+    Début :
+        #Simulation d'attributs par défaut
+        Si non(profondeur) :
+            profondeur <- 0
+        FinSi
+        Si non(cheminParcouru) :
+            cheminParcouru <- liste vide
+        FinSi
+        Si non(armesPossedes) :
+            armesPossedes <- liste vide
+        FinSi
+        Si non(horcruxesDetruits) :
+            horcruxesDetruits <- liste vide
+        FinSi
+
+        #Traitement de la case active
+        Ajouter case à cheminParcouru
+        armeCase <- association(case, carteArmes)
+        Si armeCase :
+            Ajouter le deuxième élément de armeCase à armesPossedes
+        FinSi
+        horcruxeCase <- assoc(case, carteHorcruxes)
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
+            Ajouter le deuxième élément de horcruxeCase à armesPossedes
+        FinSi
+
+        #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
+        Pour chaque successeur valide succ de case :
+            Concaténer en place horcruxesDetruits et le premier élément de RechercheProfondeur(succ, profondeur + 1, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes car chacun n'est posititionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
+        FinPour
+        Renvoyer (horcruxesDetruits armesPossedes)
+    Fin
