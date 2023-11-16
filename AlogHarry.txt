@@ -1,0 +1,34 @@
+Nous avons choisi d'expoiter la propiété mutable des listes en Lisp pour mettre directement à jour les informations nécessaires d'un appel récurisif à l'autre, sans passer par une valeur envoyée.
+Cette méthode présente plusieurs avantages :
+    Etant donné que chaque liste n'est créée qu'une seule fois et qu'il n'y a pas besoin de faire de copie à partir de la valeur de retour d'un appel, le nombre d'opérations effectuées est réduit
+    Le nombre de valeur de retour final est réduit au strict minimum, tout en permettant à l'utilisateur de pouvoir récupérer les valeurs des autres listes impliquées (en passant une liste définie et stocké précédemment dans une variable en paramètre par exemple)
+Nous lui reconnaissons toutefois un inconvénient, celui de modifier la valeur de liste passée en paramètre et donc d'imposer de lui passer une copie. 
+
+RechercheProfondeur
+    Paramètres :
+        case : entier
+        profondeur : entier (vaut 0 au premier appel)
+        carte : liste (d'adjacence)
+        carteHorcruxes : liste d'association
+        carteArmes : liste d'association
+        descriptionHorcruxes : liste d'association
+        cheminParcouru : liste (vide au premier appel)
+        armesPossedes : liste (vide au premier appel)
+        horcruxesDetruits : liste (vide au premier appel)
+    Début :
+        Ajouter case à cheminParcouru
+        armeCase <- association(case, carteArmes)
+        Si armeCase :
+            Ajouter le deuxième élément de armeCase à armesPossedes
+        FinSi
+        horcruxeCase <- assoc(case, carteHorcruxes)
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
+            Ajouter le deuxième élément de horcruxeCase à armesPossedes
+        FinSi
+        Pour chaque successeur valide succ de case :
+            Concaténer en place horcruxesDetruits et le premier élément de RechercheProfondeur(succ, profondeur + 1, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes car chacun n'est posititionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
+        FinPour
+        Renvoyer (horcruxesDetruits armesPossedes)
+    Fin
+
+Conscients de la contrainte de devoir passer de nombreux paramètres par défaut et soucieux d'éviter toute erreur, nous proposons une solution simulant des arguments par défauts.
