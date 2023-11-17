@@ -13,19 +13,19 @@ RechercheProfondeur
         carteArmes : liste d'association
         descriptionHorcruxes : liste d'association
         cheminParcouru : liste (attendue vide au premier appel)
-        armesPossedes : liste (attendue vide au premier appel)
+        armesPossedees : liste (attendue vide au premier appel)
         horcruxesDetruits : liste (attendue vide au premier appel)
     Début :
         #Traitement de la case active
-        Ajouter case à cheminParcouru
-        armeCase <- association(case, carteArmes)
+        armeCase <- assoc(case, carteArmes)
+        horcruxeCase <- assoc(case, carteHorcruxes)
         Si armeCase :
             Ajouter le deuxième élément de armeCase à armesPossedes
         FinSi
-        horcruxeCase <- assoc(case, carteHorcruxes)
-        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
-            Ajouter le deuxième élément de horcruxeCase à armesPossedes
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), armesPossedees, descriptionHorcruxes) :
+            Ajouter le deuxième élément de horcruxeCase à horcruxesDetruits
         FinSi
+        Ajouter case à cheminParcouru
 
         #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
         Pour chaque successeur valide succ de case :
@@ -65,15 +65,15 @@ RechercheProfondeur2
         FinSi
 
         #Traitement de la case active
-        Ajouter case à cheminParcouru
-        armeCase <- association(case, carteArmes)
+        armeCase <- assoc(case, carteArmes)
+        horcruxeCase <- assoc(case, carteHorcruxes)
         Si armeCase :
             Ajouter le deuxième élément de armeCase à armesPossedes
         FinSi
-        horcruxeCase <- assoc(case, carteHorcruxes)
-        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), armesPossedees, descriptionHorcruxes) :
             Ajouter le deuxième élément de horcruxeCase à armesPossedes
         FinSi
+        Ajouter case à cheminParcouru
 
         #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
         Pour chaque successeur valide succ de case :
@@ -114,15 +114,15 @@ RechercheProfondeur3
         FinSi
 
         #Traitement de la case active
-        Ajouter case à cheminParcouru
-        armeCase <- association(case, carteArmes)
+        armeCase <- assoc(case, carteArmes)
+        horcruxeCase <- assoc(case, carteHorcruxes)
         Si armeCase :
             Ajouter le deuxième élément de armeCase à armesPossedes
         FinSi
-        horcruxeCase <- assoc(case, carteHorcruxes)
-        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), descriptionHorcruxes) :
+        Si horcruxeCase et hasBonneArme(cadr(horcruxeCase), armesPossedees, descriptionHorcruxes) :
             Ajouter le deuxième élément de horcruxeCase à armesPossedes
         FinSi
+        Ajouter case à cheminParcouru
 
         #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
         Pour chaque successeur valide succ de case :
