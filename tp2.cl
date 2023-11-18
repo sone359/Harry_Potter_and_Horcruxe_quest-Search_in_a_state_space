@@ -69,32 +69,61 @@
 ;     Le nombre de valeur de retour final est réduit au strict minimum, tout en permettant à l'utilisateur de pouvoir récupérer les valeurs des autres listes impliquées (en passant une liste définie et stocké précédemment dans une variable en paramètre par exemple)
 ; Nous lui reconnaissons toutefois un inconvénient, celui de modifier la valeur de liste passée en paramètre et donc d'imposer de lui passer une copie s'il ne souhaite pas de ce comportement
 
-(defun rechercheProfondeur (case carte carteHorcruxes carteArmes descriptionHorcruxes &key (profondeur 0) (cheminParcouru NIL) (armesPossedees NIL) (horcruxesDetruits NIL))
+(defun rechercheProfondeur (case carte carteHorcruxes carteArmes descriptionHorcruxes &key (profondeur 0) (cheminParcouru NIL) (armesPossedees NIL) (horcruxesDetruits NIL) (affichage "log-arbre"))
     ;Traitement de la case active
+    ;Ajoute la case active au chemin parcouru
     (if cheminParcouru
         (setf (cdr (last cheminParcouru)) (list case))
         (setf cheminParcouru (list case))
     )
+    ;Dans le mode events ou events-arbre, affichage de la case active
+    (cond 
+        ((equal affichage "events-arbre")(format t "~% ~% ~vTHarry est à la case ~s" profondeur case))
+        ((equal affichage "events")(format t "~% ~% Harry est à la case ~s" case))
+    )
     (let (
-        (armeCase (assoc case carteArmes))
-        (horcruxeCase (assoc case carteHorcruxes))
+        (armeCase (assoc case carteArmes)) ;Prend la valeur de l'Horcruxe présent sur la cases s'il y en a un, sinon NIL
+        (horcruxeCase (assoc case carteHorcruxes)) ;Prend la valeur de la méthode de destruction présente sur la cases s'il y en a une, sinon NIL
         )
         (if armeCase
-            (push (cadr armeCase) armesPossedees)
+            (progn
+                ;Dans le mode events ou events-arbre, affichage des méthodes de destruction mis à jour
+                (cond 
+                    ((equal affichage "events-arbre")(format t "~% ~% ~vTArme présente : ~s~% ~vTMéthodes de Destruction récupérées : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr armeCase) profondeur armesPossedees profondeur)) 
+                    ((equal affichage "events")(format t "~% ~% Arme présente : ~s~% Méthodes de Destruction récupérées :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr armeCase) armesPossedees))
+                )
+                (push (cadr armeCase) armesPossedees)
+            )
         )
         (if (and horcruxeCase (hasBonneArme (cadr horcruxeCase) armesPossedees descriptionHorcruxes)) 
-            (push (cadr horcruxeCase) horcruxesDetruits)
+            (progn
+                ;Dans le mode events ou events-arbre, affichage des Horcruxes mis à jour
+                (cond 
+                    ((equal affichage "events-arbre")(format t "~% ~% ~vTHorcruxes présent : ~s~% ~vTHorcruxes détruits : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr horcruxeCase) profondeur horcruxesDetruits profondeur)) 
+                    ((equal affichage "events")(format t "~% ~% Horcruxes présent : ~s~% Horcruxes détruits :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr horcruxeCase) horcruxesDetruits))
+                )
+                (push (cadr horcruxeCase) horcruxesDetruits)
+            )
+            ;Si on ne possède pas la méthode de destruction requise, dans le mode events ou events-arbre, on l'indique
+            (cond 
+                ((equal affichage "events-arbre")(format t "~% ~vTLa méthode de destruction nécessaire n'est pas possédée !~% ~vTL'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% ~vTPassage à la case suivante..." profondeur profondeur profondeur)) 
+                ((equal affichage "events")(format t "~% La méthode de destruction nécessaire n'est pas possédée !~% L'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% Passage à la case suivante..."))
+            )
         )
 
-        ;Affichage de la case actuelle, des méthodes de destruction possédées et des Horcruxes détruits
-        (format t "~vT- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" profondeur case armespossedees horcruxesdetruits)
+
+        ;Dans le mode log ou log-arbre, affichage de la case actuelle, des méthodes de destruction possédées et des Horcruxes détruits
+        (cond 
+            ((equal affichage "log-arbre")(format t "~vT- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" profondeur case armespossedees horcruxesdetruits))
+            ((equal affichage "log")(format t "- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" case armespossedees horcruxesdetruits))
+        )
 
         ;Vérification que la profondeur maximum n'a pas été atteinte
         (if (< profondeur 7)
             ;Si elle ne l'a pas été, recherche et traitement des successeurs valides (non déjà parcouru notamment)
             (dolist (succ (successeurs-valides case carte cheminParcouru))
                 (if (not (member succ cheminParcouru)) ;Nouvelle vérification que la case n'a pas déjà été parcourue dans le cas où elle aurait été parcourue lors d'un appel imbriqué ayant eu lieu après la recherche de successeurs valides
-                    (let ((tmp (rechercheProfondeur succ carte carteHorcruxes carteArmes descriptionHorcruxes :profondeur (+ profondeur 1) :cheminParcouru cheminParcouru :armesPossedees armesPossedees :horcruxesDetruits horcruxesDetruits)))
+                    (let ((tmp (rechercheProfondeur succ carte carteHorcruxes carteArmes descriptionHorcruxes :profondeur (+ profondeur 1) :cheminParcouru cheminParcouru :armesPossedees armesPossedees :horcruxesDetruits horcruxesDetruits :affichage affichage)))
                         (setf horcruxesDetruits (car tmp)) ;On remplace la liste plutôt que de la modifier en place pour traiter le cas où HorcruxesDetruits est vide (égale à NIL et donc sans car et cdr)
                         (setf armesPossedees (cadr tmp))
                     )
@@ -107,6 +136,7 @@
     )
 )
 
-(rechercheprofondeur2 1 map horcruxesMap armesMap horcruxesDescription)
-(rechercheprofondeur2 24 map horcruxesMap armesMap horcruxesDescription)
-(rechercheprofondeur2 1 map horcruxesMap armesMap horcruxesDescription :horcruxesDetruits NIL :profondeur 2)
+(rechercheprofondeur 1 map horcruxesMap armesMap horcruxesDescription)
+(rechercheprofondeur 24 map horcruxesMap armesMap horcruxesDescription)
+(rechercheprofondeur 1 map horcruxesMap armesMap horcruxesDescription :horcruxesDetruits NIL :profondeur 2)
+(rechercheprofondeur 1 map horcruxesMap armesMap horcruxesDescription :affichage "events")
