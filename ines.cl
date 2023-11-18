@@ -58,7 +58,20 @@
 
 
 
+(defun supprimeHorcruxeCarte (horcruxe carte)
+  "Supprime l'Horcruxe de la carte."
+  (setq nouvelle-carte (copy-list carte)) ; Crée une copie de la carte pour éviter de modifier l'original
 
+  ; Recherche et suppression de l'Horcruxe de la carte
+  (setq index (position horcruxe nouvelle-carte :test #'string=))
+  (when index
+    (setq nouvelle-carte (remove (elt nouvelle-carte index) nouvelle-carte :test #'string=)))
+
+  nouvelle-carte) ; Retourne la nouvelle carte après la suppression
+
+
+
+  
 
 
 
