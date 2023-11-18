@@ -6,15 +6,17 @@ Nous lui reconnaissons toutefois un inconvénient, celui de modifier la valeur d
 
 RechercheProfondeur
     Paramètres :
-        case : entier
-        profondeur : entier (attendu valant 0 au premier appel)
-        carte : liste (d'adjacence)
-        carteHorcruxes : liste d'association
-        carteArmes : liste d'association
-        descriptionHorcruxes : liste d'association
-        cheminParcouru : liste (attendue vide au premier appel)
-        armesPossedees : liste (attendue vide au premier appel)
-        horcruxesDetruits : liste (attendue vide au premier appel)
+        Obligatoires :
+            case : entier
+            carte : liste (d'adjacence)
+            carteHorcruxes : liste d'association
+            carteArmes : liste d'association
+            descriptionHorcruxes : liste d'association
+        Optionnels :
+            profondeur : entier (attendu valant 0 au premier appel)
+            cheminParcouru : liste (attendue vide au premier appel)
+            armesPossedees : liste (attendue vide au premier appel)
+            horcruxesDetruits : liste (attendue vide au premier appel)
     Début :
         #Traitement de la case active
         Ajouter case à cheminParcouru
@@ -29,7 +31,7 @@ RechercheProfondeur
 
         #Recherche et traitement des successeurs valides (non déjà parcouru notamment)
         Pour chaque successeur valide succ de case :
-            tmp <- RechercheProfondeur(succ, profondeur + 1, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes et armes car chacun n'est positionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
+            tmp <- RechercheProfondeur(succ, carte, carteHorcruxes, carteArmes, descriptionHorcruxes, profondeur + 1, cheminParcouru, armesPossedes) #Pas de risque de duplication des horcruxes et armes car chacun n'est positionné que sur une seule case et on ne vérifie chaque case qu'une unique fois grâce à cheminParcouru (à changer donc si cette règle de l'unicité des horcruxes venait à changer)
             Remplacer horcruxesDetruits par le premier élément de tmp
             Remplacer armesPossedees par le second élément de tmp
         FinPour
