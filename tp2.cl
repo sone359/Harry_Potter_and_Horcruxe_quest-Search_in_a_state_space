@@ -69,65 +69,44 @@
 ;     Le nombre de valeur de retour final est réduit au strict minimum, tout en permettant à l'utilisateur de pouvoir récupérer les valeurs des autres listes impliquées (en passant une liste définie et stocké précédemment dans une variable en paramètre par exemple)
 ; Nous lui reconnaissons toutefois un inconvénient, celui de modifier la valeur de liste passée en paramètre et donc d'imposer de lui passer une copie s'il ne souhaite pas de ce comportement
 
-(defun rechercheProfondeur (case profondeur carte carteHorcruxes carteArmes descriptionHorcruxes cheminParcouru armesPossedees horcruxesDetruits)
+(defun rechercheProfondeur (case carte carteHorcruxes carteArmes descriptionHorcruxes &key (profondeur 0) (cheminParcouru NIL) (armesPossedees NIL) (horcruxesDetruits NIL))
     ;Traitement de la case active
-    (let (
-        (armeCase (assoc case carteArmes))
-        (horcruxeCase (assoc case carteHorcruxes))
-        )
-        (if armeCase 
-            (if armesPossedees
-                (setf (cdr (last armesPossedees)) (list (cadr armeCase)))
-                (setf armesPossedees (list (cadr armeCase)))
-            )
-        )
-        (if (and horcruxeCase (hasBonneArme (cadr horcruxeCase) armesPossedees descriptionHorcruxes)) 
-            (if horcruxesDetruits
-                (setf (cdr (last horcruxesDetruits)) (list (cadr horcruxeCase)))
-                (setf horcruxesDetruits (list (cadr horcruxeCase)))
-            )
-        )
-    )
-    ; (setq armeCase (assoc case carteArmes))
-    ; (setq horcruxeCase (assoc case carteHorcruxes))
-    ; (if armeCase 
-    ;     (if armesPossedees
-    ;         (setf (cdr (last armesPossedees)) (list (cadr armeCase)))
-    ;         (setf armesPossedees (list (cadr armeCase)))
-    ;         ;(setf armesPossedees (list "coucou"))
-    ;     )
-    ; )
-    ; (if (and horcruxeCase (hasBonneArme (cadr horcruxeCase) armesPossedees descriptionHorcruxes)) 
-    ;         (if horcruxesDetruits
-    ;             (setf (cdr (last horcruxesDetruits)) (list (cadr horcruxeCase)))
-    ;             (setq horcruxesDetruits (list (cadr horcruxeCase)))
-    ;         )
-    ;     )
-    
-
     (if cheminParcouru
         (setf (cdr (last cheminParcouru)) (list case))
         (setf cheminParcouru (list case))
     )
-
-    ;Affichage de la case actuelle, des méthodes de destruction possédées et des Horcruxes détruits
-    (format t "~vT- ~a ~a ~a ~a~%" profondeur case cheminParcouru armespossedees horcruxesdetruits)
-
-    ;Vérification que la profondeur maximum n'a pas été atteinte
-    (if (< profondeur 7)
-        ;Si elle ne l'a pas été, recherche et traitement des successeurs valides (non déjà parcouru notamment)
-        (dolist (succ (successeurs-valides case carte cheminParcouru))
-            (if (not (member succ cheminParcouru)) ;Nouvelle vérification que la case n'a pas déjà été parcourue dans le cas où elle aurait été parcourue lors d'un appel imbriqué ayant eu lieu après la recherche de successeurs valides
-                (rechercheProfondeur succ (+ profondeur 1) carte carteHorcruxes carteArmes descriptionHorcruxes cheminParcouru armesPossedees horcruxesDetruits)
-                ;(push horcruxesDetruits (car (rechercheProfondeur succ (+ profondeur 1) carte carteHorcruxes carteArmes descriptionHorcruxes cheminParcouru armesPossedees horcruxesDetruits)))
-            )
+    (let (
+        (armeCase (assoc case carteArmes))
+        (horcruxeCase (assoc case carteHorcruxes))
         )
-        ;Sinon, on ne fait rien
+        (if armeCase
+            (push (cadr armeCase) armesPossedees)
+        )
+        (if (and horcruxeCase (hasBonneArme (cadr horcruxeCase) armesPossedees descriptionHorcruxes)) 
+            (push (cadr horcruxeCase) horcruxesDetruits)
+        )
+
+        ;Affichage de la case actuelle, des méthodes de destruction possédées et des Horcruxes détruits
+        (format t "~vT- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" profondeur case armespossedees horcruxesdetruits)
+
+        ;Vérification que la profondeur maximum n'a pas été atteinte
+        (if (< profondeur 7)
+            ;Si elle ne l'a pas été, recherche et traitement des successeurs valides (non déjà parcouru notamment)
+            (dolist (succ (successeurs-valides case carte cheminParcouru))
+                (if (not (member succ cheminParcouru)) ;Nouvelle vérification que la case n'a pas déjà été parcourue dans le cas où elle aurait été parcourue lors d'un appel imbriqué ayant eu lieu après la recherche de successeurs valides
+                    (let ((tmp (rechercheProfondeur succ carte carteHorcruxes carteArmes descriptionHorcruxes :profondeur (+ profondeur 1) :cheminParcouru cheminParcouru :armesPossedees armesPossedees :horcruxesDetruits horcruxesDetruits)))
+                        (setf horcruxesDetruits (car tmp)) ;On remplace la liste plutôt que de la modifier en place pour traiter le cas où HorcruxesDetruits est vide (égale à NIL et donc sans car et cdr)
+                        (setf armesPossedees (cadr tmp))
+                    )
+                )
+            )
+            ;Sinon, on ne fait rien
+        )
+        ;Dans tous les cas, renvoie des horcruxes détruits et des méthodes de destruction possédées, qui ne servent pas pour les appels intermédiaires mais sont attendues pour le premier appel
+        (list horcruxesDetruits armesPossedees)
     )
-    ;Dans tous les cas, renvoie des horcruxes détruits et des méthodes de destruction possédées, qui ne servent pas pour les appels intermédiaires mais sont attendues pour le premier appel
-    (list horcruxesDetruits armesPossedees)
 )
 
-;Tests de la recherche
-(rechercheprofondeur 1 0 map horcruxesMap armesMap horcruxesDescription NIL NIL NIL)
-(rechercheprofondeur 1 0 map horcruxesMap armesMap horcruxesDescription NIL '("salut") '("salue"))
+(rechercheprofondeur2 1 map horcruxesMap armesMap horcruxesDescription)
+(rechercheprofondeur2 24 map horcruxesMap armesMap horcruxesDescription)
+(rechercheprofondeur2 1 map horcruxesMap armesMap horcruxesDescription :horcruxesDetruits NIL :profondeur 2)
