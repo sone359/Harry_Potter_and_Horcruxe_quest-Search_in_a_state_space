@@ -2,6 +2,7 @@
                          HorcruxesMap HorcruxesDetruites ArmesMap ArmesPossedees)
   
   (format t "~% ~% Harry est à la case ~s" case)
+  
   (push case cheminParcouru)
   (setq armePresente (methodePresente case ArmesMap))
   (if armePresente 
