@@ -8,7 +8,7 @@
       (progn
         (format t "~% ~% Arme présente : ~s" armeCase)
         (push armeCase ArmesPossedees)
-        (setq ArmesMap (supprimeArmeCarte case ArmesMap))
+        (setq ArmesMap (supprimeMethodeCarte case ArmesMap))
         (format t "~% Méthodes de Destruction récupérées :")
         (dolist (arme ArmesPossedees)
           (format t "~% ~s" arme))
@@ -60,15 +60,34 @@
 
 
 (defun supprimeHorcruxeCarte (horcruxe carte)
-  "Supprime l'Horcruxe de la carte."
-  (setq nouvelle-carte (copy-list carte)) ; Crée une copie de la carte pour éviter de modifier l'original
+  (setq carte (copy-list carte)) ; Duplique la carte sans changer l'originale
 
   ; Recherche et suppression de l'Horcruxe de la carte
-  (setq index (position horcruxe nouvelle-carte :test #'string=))
+  
+  (setq nouvelle_carte index (position horcruxe nouvelle_carte :test #'string=))
   (when index
-    (setq nouvelle-carte (remove (elt nouvelle-carte index) nouvelle-carte :test #'string=)))
+    (setq nouvelle_carte (remove (elt nouvelle_carte index) nouvelle_carte :test #'string=)))
 
-  nouvelle-carte) ; Retourne la nouvelle carte après la suppression
+  nouvelle_carte) ; Retourne la nouvelle carte après la suppression
+
+
+
+  
+(defun supprimeMéthodeCarte (methode carte)
+  (setq nouvelle_carte (copy-list carte)) ; Duplique la carte sans changer l'originale
+
+  ; Recherche et suppression de l'Horcruxe de la carte
+  (setq index (position horcruxe nouvelle_carte :test #'string=))
+  (when index
+    (setq nouvelle_carte (remove (elt nouvelle_carte index) nouvelle_carte :test #'string=)))
+
+  nouvelle_carte) ; Retourne la nouvelle carte après la suppression
+
+
+
+
+
+
 
 
 
@@ -113,7 +132,7 @@
         (format t "~%  Sur cette case se trouve la Méthode : ~s" armeCase)
         
       
-        (setq ArmesMap (supprimeArmeCarte pos_Harry ArmesMap)) ; on supprime la methode de la carte
+        (setq ArmesMap (supprimeMethodeCarte pos_Harry ArmesMap)) ; on supprime la methode de la carte
 
         (format t "~% Méthodes de Destruction récupérées :")
           (dolist (arme ArmesPossedeesHarry)
@@ -170,7 +189,7 @@
         (format t "~% La méthode présente sur la case de VDM est : ~s" armeCase)
         (push (cadr armeCase) ArmesPossedeesVoldemort)
         
-        (setq ArmesMap (supprimeArmeCarte pos_VDM ArmesMap))
+        (setq ArmesMap (supprimeMethodeCarte pos_VDM ArmesMap))
         (format t "~% Méthodes de Destruction récupérées :")
         (dolist (arme ArmesPossedeesVoldemort)
           (format t "~% ~s" arme))
