@@ -4,11 +4,11 @@
   (format t "~% ~% Harry est à la case ~s" case)
   
   (push case cheminParcouru)
-  (setq armePresente (methodePresente case ArmesMap))
-  (if armePresente 
+  (setq armeCase (methodePresente case ArmesMap))
+  (if armeCase 
       (progn
-        (format t "~% ~% Arme présente : ~s" armePresente)
-        (push armePresente ArmesPossedees)
+        (format t "~% ~% Arme présente : ~s" armeCase)
+        (push armeCase ArmesPossedees)
         (setq ArmesMap (supprimeArmeCarte case ArmesMap))
         (format t "~% Méthodes de Destruction récupérées :")
         (dolist (arme ArmesPossedees)
@@ -76,47 +76,75 @@
 
 
 
-(defun Recherche-Harry (caseHarry caseVoldemort carte profondeur HorcruxesDescriptions cheminParcouruHarry
+(defun Recherche-Harry (pos_Harry pos_VDM carte profondeur HorcruxesDescriptions cheminParcouruHarry
                                   cheminParcouruVoldemort HorcruxesMap HorcruxesDetruitesHarry 
                                   HorcruxesDetruitesVoldemort ArmesMap ArmesPossedeesHarry
                                   ArmesPossedeesVoldemort)
   
-  (when (and (equal caseHarry caseVoldemort)
-               (member "Sortilège de la Mort" ArmesPossedeesVoldemort :test #'string=))
-    (return-from Recherche-Harry (list "Harry Potter a été tué par Voldemort"))
-    )
+  ;ici on teste si Harry et VDM sont sur la même case et si VDM possède la méthode nécessaire pour tuer Harry (qui est un horcruxe)
   
-  (format t "~% ~% Harry est à la case ~s" caseHarry)
-  (push caseHarry cheminParcouruHarry)
-  (setq armePresente (methodePresente caseHarry ArmesMap))
-  (if armePresente 
+  (when (and (equal pos_Harry  pos_VDM) (member "Sortilège de la Mort" ArmesPossedeesVoldemort :test #'string=))  ;Dans ce cas, #'string= indique que la comparaison doit être faite en utilisant l'égalité de chaînes de caractères.
+                 (return-from Recherche-Harry (list "Harry Potter a été tué par Voldemort"))
+    ) 
+    ;ici on sort directement de la fonction grâce à return-from car le jeu est perdu, harry est mort
+  
+ 
+ 
+ 
+  (format t "~% Harry est à la case ~s" pos_Harry )
+  (if cheminParcouruHarry
+  (setf (cdr(last cheminParcouruHarry) (list pos_Harry))
+  (setf cheminParcouruHarry (list pos_Harry))
+  ) ;on rajoute la position actuelle de Harry à son chemin parcouru
+
+  (let (
+    armeCase (assoc pos_Harry armesMap) ; armecase prends la valeur de la mathode sur la case de Harry s'il y en a un
+  ))
+  
+  (if armeCase
       (progn
-        (format t "~% ~% Arme présente : ~s" armePresente)
-        (push armePresente ArmesPossedeesHarry)
-        (setq ArmesMap (supprimeArmeCarte caseHarry ArmesMap))
+        
+        (push (cadr armeCase) ArmesPossedeesHarry) ; on l'ajoute donc aux méthodes de Harry
+        (format t "~%  Sur cette case se trouve la Méthode : ~s" armeCase)
+        
+      
+        (setq ArmesMap (supprimeArmeCarte pos_Harry ArmesMap)) ; on supprime la methode de la carte
+
         (format t "~% Méthodes de Destruction récupérées :")
-        (dolist (arme ArmesPossedeesHarry)
-          (format t "~% ~s" arme))
-        (format t "~%~% Passage à la case suivante...")
+          (dolist (arme ArmesPossedeesHarry)
+            (format t "~% ~s" arme))
+
+        (format t "~% Passage à la case suivante...")
         )
     )
   
-  (format t "~% ~% Voldemort est à la case ~s" caseVoldemort)
-  (push caseVoldemort cheminParcouruVoldemort)
-  (setq armePresente (methodePresente caseVoldemort ArmesMap))
-  (if armePresente 
+  
+  (format t "~% ~% Voldemort est sur la case ~s" pos_VDM)
+  (if cheminParcouruVoldemort
+  (setf (cdr(last cheminParcouruVoldemort)) (list pos_VDM))
+  (setf cheminParcouruVoldemort (list pos_VDM))
+  ) ;cela revient à (push pos_VDM cheminParcouruVoldemort)
+
+
+  (let (
+    armeCase (assoc pos_VDM armesMap) ; armecase prends la valeur de la mathode sur la case de VDM s'il y en a une
+  ))
+
+  (if armeCase
       (progn
-        (format t "~% ~% Arme présente : ~s" armePresente)
-        (push armePresente ArmesPossedeesVoldemort)
-        (setq ArmesMap (supprimeArmeCarte caseVoldemort ArmesMap))
+        (format t "~% La méthode présente sur la case de VDM est : ~s" armeCase)
+        (push (cadr armeCase) ArmesPossedeesVoldemort)
+        
+        (setq ArmesMap (supprimeArmeCarte pos_VDM ArmesMap))
         (format t "~% Méthodes de Destruction récupérées :")
         (dolist (arme ArmesPossedeesVoldemort)
           (format t "~% ~s" arme))
-        (format t "~%~% Passage à la case suivante...")
+        (format t "~%~% Passage à la case suivante")
         )
     )
   
-  (setq HorcruxePresente (horcruxePresente caseHarry HorcruxesMap))
+
+  (setq HorcruxePresente (horcruxePresente pos_Harry  HorcruxesMap))
   (if HorcruxePresente 
       (progn
         (format t "~%~% Horcruxes présente : ~s" HorcruxePresente)
@@ -126,20 +154,20 @@
               (format t "~% Horcruxes détruites :")
               (dolist (horcruxe HorcruxesDetruitesHarry)
                 (format t "~% ~s" horcruxe))
-              (setq HorcruxesMap (supprimeHorcruxeCarte caseHarry HorcruxesMap))
+              (setq HorcruxesMap (supprimeHorcruxeCarte pos_Harry  HorcruxesMap))
               (format t "~%~% Passage à la case suivante...")
               )
           (progn
             (format t "~% La méthode de destruction nécessaire n'est pas possédée !")
             (format t "~% L'Horcruxe n'a pas été détruite et ne pourra plus l'être !")
-            (setq HorcruxesMap (supprimeHorcruxeCarte caseHarry HorcruxesMap))
+            (setq HorcruxesMap (supprimeHorcruxeCarte pos_Harry  HorcruxesMap))
             (format t "~%~% Passage à la case suivante...")
             )
           )
         )
     )
   
-  (setq HorcruxePresente (horcruxePresente caseVoldemort HorcruxesMap))
+  (setq HorcruxePresente (horcruxePresente pos_VDM HorcruxesMap))
   (if HorcruxePresente 
       (progn
         (format t "~%~% Horcruxes présente : ~s" HorcruxePresente)
@@ -149,13 +177,13 @@
               (format t "~% Horcruxes détruites :")
               (dolist (horcruxe HorcruxesDetruitesVoldemort)
                 (format t "~% ~s" horcruxe))
-              (setq HorcruxesMap (supprimeHorcruxeCarte caseVoldemort HorcruxesMap))
+              (setq HorcruxesMap (supprimeHorcruxeCarte pos_VDM HorcruxesMap))
               (format t "~%~% Passage à la case suivante...")
               )
           (progn
             (format t "~% La méthode de destruction nécessaire n'est pas possédée !")
             (format t "~% L'Horcruxe n'a pas été détruite et ne pourra plus l'être !")
-            (setq HorcruxesMap (supprimeHorcruxeCarte caseVoldemort HorcruxesMap))
+            (setq HorcruxesMap (supprimeHorcruxeCarte pos_VDM HorcruxesMap))
             (format t "~%~% Passage à la case suivante...")
             )
           )
@@ -164,8 +192,8 @@
   
   (if (< profondeur 7)
       (progn
-        (setq cases_suivantes_harry (successeurs-valides caseHarry carte cheminParcouruHarry))
-        (setq cases_suivantes_voldemort (assoc caseVoldemort carte))
+        (setq cases_suivantes_harry (successeurs-valides pos_Harry  carte cheminParcouruHarry))
+        (setq cases_suivantes_voldemort (assoc pos_VDM carte))
         (dolist (voisin cases_suivantes_harry)
           (reverse (cons voisin (reverse cheminParcouruHarry))))
         
