@@ -1,4 +1,4 @@
-(defun Recherche-Harry (case carte profondeur descriptionHorcruxes cheminParcouru
+(defun rechercheProfondeur-Harry (case carte profondeur descriptionHorcruxes cheminParcouru
                          carteHorcruxes HorcruxesDetruites ArmesMap ArmesPossedees)
   
   (format t "~% ~% Harry est à la case ~s" case)
@@ -45,7 +45,7 @@
           (reverse (cons voisin (reverse cheminParcouru))))
         
         (dolist (voisin cases_suivantes)
-          (setq data_parcours (Recherche-Harry voisin carte (+ profondeur 1) descriptionHorcruxes cheminParcouru
+          (setq data_parcours (rechercheProfondeur-Harry voisin carte (+ profondeur 1) descriptionHorcruxes cheminParcouru
                                                        carteHorcruxes HorcruxesDetruites ArmesMap ArmesPossedees))
           (setq HorcruxesDetruites (car data_parcours))
           (setq carteHorcruxes (cadr data_parcours))
@@ -86,7 +86,7 @@
 
 
 
-(defun Recherche-Harry (pos_Harry pos_VDM carte profondeur descriptionHorcruxes cheminParcouruHarry
+(defun rechercheProfondeur-Harry-VDM (pos_Harry pos_VDM carte profondeur descriptionHorcruxes cheminParcouruHarry
                                   cheminParcouruVoldemort carteHorcruxes HorcruxesDetruitesHarry 
                                   HorcruxesDetruitesVoldemort ArmesMap ArmesPossedeesHarry
                                   ArmesPossedeesVoldemort)
@@ -94,7 +94,7 @@
   ;ici on teste si Harry et VDM sont sur la même case et si VDM possède la méthode nécessaire pour tuer Harry (qui est un horcruxe)
   
   (when (and (equal pos_Harry  pos_VDM) (member "Sortilège de la Mort" ArmesPossedeesVoldemort :test #'string=))  ;Dans ce cas, #'string= indique que la comparaison doit être faite en utilisant l'égalité de chaînes de caractères.
-                 (return-from Recherche-Harry (list "Harry Potter a été tué par Voldemort"))
+                 (return-from rechercheProfondeur-Harry-VDM (list "Harry Potter a été tué par Voldemort"))
     ) 
     ;ici on sort directement de la fonction grâce à return-from car le jeu est perdu, harry est mort
   
@@ -219,23 +219,22 @@
 
 (if (< profondeur 7) ; on verifie que la profondeur max n'est pas atteinte
       (progn
-        (setq succ_harry (successeurs-valides pos_Harry  carte cheminParcouruHarry))
+        (setq succ_harry (successeurs-valides pos_Harry  carte cheminParcouruHarry ))
         (setq succ_voldemort (assoc pos_VDM carte))
         (dolist (voisin succ_harry)
           (reverse (cons voisin (reverse cheminParcouruHarry))))
         
         (format t "~% Cases suivantes possibles pour Voldemort :")
-        (dolist (voisin succ_voldemort)
-          (format t "~% ~s" voisin))
+          (dolist (voisin succ_voldemort)
+           (format t "~% ~s" voisin))
         (format t " ~% Entrer la case choisie: ")
         (setq inputCase (read))
         
         
         (dolist (voisin succ_harry)
-          (setq data_parcours (Recherche-Harry voisin inputCase carte (+ profondeur 1) descriptionHorcruxes cheminParcouruHarry
-                                                       cheminParcouruVoldemort carteHorcruxes HorcruxesDetruitesHarry 
-                                               HorcruxesDetruitesVoldemort ArmesMap ArmesPossedeesHarry
-                                               ArmesPossedeesVoldemort))
+          (setq data_parcours (rechercheProfondeur-Harry-VDM voisin inputCase carte (+ profondeur 1) descriptionHorcruxes cheminParcouruHarry
+           cheminParcouruVoldemort carteHorcruxes HorcruxesDetruitesHarry HorcruxesDetruitesVoldemort ArmesMap ArmesPossedeesHarry ArmesPossedeesVoldemort))
+
           (setq HorcruxesDetruitesHarry (car data_parcours))
           (setq HorcruxesDetruitesVoldemort (cadr data_parcours))
           (setq carteHorcruxes (caddr data_parcours))
@@ -244,10 +243,11 @@
           (setq ArmesPossedeesVoldemort (caddr (cdddr data_parcours)))
           (setq cheminParcouruHarry (cadddr (cdddr data_parcours)))
           (setq cheminParcouruVoldemort (cadr (cdddr (cdddr data_parcours)))))))
+  
   (list HorcruxesDetruitesHarry HorcruxesDetruitesVoldemort carteHorcruxes ArmesMap ArmesPossedeesHarry ArmesPossedeesVoldemort cheminParcouruHarry cheminParcouruVoldemort))
   )
 
   
         
 
-(Recherche-Harry '1 '20 map '0 horcruxesDescription nil nil carteHorcruxes nil nil armesMap nil nil)
+(rechercheProfondeur-Harry-VDM '1 '20 map '0 horcruxesDescription nil nil carteHorcruxes nil nil armesMap nil nil)
