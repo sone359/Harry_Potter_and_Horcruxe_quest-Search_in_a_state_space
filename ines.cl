@@ -57,6 +57,8 @@
 
 
 
+
+
 (defun supprimeHorcruxeCarte (horcruxe carte)
   "Supprime l'Horcruxe de la carte."
   (setq nouvelle-carte (copy-list carte)) ; Crée une copie de la carte pour éviter de modifier l'original
@@ -70,17 +72,6 @@
 
 
 
-  
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -88,7 +79,7 @@
 (defun rechercheProfondeur-Harry-VDM (pos_Harry pos_VDM carte profondeur
  descriptionHorcruxes cheminParcouruHarry cheminParcouruVoldemort 
  CarteHorcruxes HorcruxesDetruitesHarry HorcruxesDetruitesVoldemort 
- ArmesMap ArmesPossedeesHarry  ArmesPossedeesVoldemort)
+ ArmesMap ArmesPossedeesHarry ArmesPossedeesVoldemort)
   
   ;ici on teste si Harry et VDM sont sur la même case et si VDM possède la méthode nécessaire pour tuer Harry (qui est un horcruxe)
   
@@ -222,6 +213,7 @@
         (dolist (voisin succ_harry)
           (reverse (cons voisin (reverse cheminParcouruHarry))))
         
+
         (format t "~% Cases suivantes possibles pour Voldemort :")
           (dolist (voisin succ_voldemort)
            (format t "~% ~s" voisin))
