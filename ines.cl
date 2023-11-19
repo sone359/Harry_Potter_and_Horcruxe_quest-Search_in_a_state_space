@@ -16,13 +16,13 @@
         (format t "~%~% Passage à la case suivante...")
         )
     )
-  (setq horcruxeCase    (horcruxeCase    case carteHorcruxes))
-  (if horcruxeCase    
+  (setq horcruxeCase  (horcruxeCase  case carteHorcruxes))
+  (if horcruxeCase  
       (progn
-        (format t "~%~% Horcruxes présente : ~s" horcruxeCase   )
-        (if (hasBonneArme horcruxeCase    descriptionHorcruxes ArmesPossedees)
+        (format t "~%~% Horcruxes présente : ~s" horcruxeCase  )
+        (if (hasBonneArme horcruxeCase  descriptionHorcruxes ArmesPossedees)
             (progn
-              (push horcruxeCase    HorcruxesDetruites) 
+              (push horcruxeCase  HorcruxesDetruites) 
               (format t "~% Horcruxes détruites :")
               (dolist (horcruxe HorcruxesDetruites)
                 (format t "~% ~s" horcruxe))
@@ -155,14 +155,14 @@
 
 
  (let (
-    horcruxeCase    (assoc pos_Harry carteHorcruxes) ; horcruxeCase   prends la valeur de l'horcruxe sur la case de harry s'il y en a un
+    horcruxeCase (assoc pos_Harry carteHorcruxes) ; horcruxeCase prends la valeur de l'horcruxe sur la case de harry s'il y en a un
   ))
 
-  (if horcruxeCase   
+  (if horcruxeCase  
       (progn
         (format t "~%~% L'horcruxe présent sur cette case est: ~s" horcruxeCase  )
        
-        (if (hasBonneArme (cadr horcruxeCase   )  ArmesPossedeesHarry descriptionHorcruxes)
+        (if (hasBonneArme (cadr horcruxeCase  )  ArmesPossedeesHarry descriptionHorcruxes)
             (progn
               (push (cadr horcruxeCase  ) HorcruxesDetruitesHarry) 
               
@@ -188,10 +188,10 @@
 
 
  (let (
-    horcruxeCase   (assoc pos_VDM carteHorcruxes) ; horcruxeCase   prends la valeur de l'horcruxe sur la case de VDM s'il y en a un
+    horcruxeCase  (assoc pos_VDM carteHorcruxes) ; horcruxeCase  prends la valeur de l'horcruxe sur la case de VDM s'il y en a un
   ))
 
-(if horcruxeCase   
+(if horcruxeCase  
       (progn
         (format t "~% L'Horcruxe présent sur la case de Voldemort est : ~s" horcruxeCase  )
 
@@ -217,21 +217,21 @@
     )
   
 
-  (if (< profondeur 7) ; on verifie que la profondeur max n'est pas atteinte
+(if (< profondeur 7) ; on verifie que la profondeur max n'est pas atteinte
       (progn
-        (setq cases_suivantes_harry (successeurs-valides pos_Harry  carte cheminParcouruHarry))
-        (setq cases_suivantes_voldemort (assoc pos_VDM carte))
-        (dolist (voisin cases_suivantes_harry)
+        (setq succ_harry (successeurs-valides pos_Harry  carte cheminParcouruHarry))
+        (setq succ_voldemort (assoc pos_VDM carte))
+        (dolist (voisin succ_harry)
           (reverse (cons voisin (reverse cheminParcouruHarry))))
         
         (format t "~% Cases suivantes possibles pour Voldemort :")
-        (dolist (voisin cases_suivantes_voldemort)
+        (dolist (voisin succ_voldemort)
           (format t "~% ~s" voisin))
         (format t " ~% Entrer la case choisie: ")
         (setq inputCase (read))
         
         
-        (dolist (voisin cases_suivantes_harry)
+        (dolist (voisin succ_harry)
           (setq data_parcours (Recherche-Harry voisin inputCase carte (+ profondeur 1) descriptionHorcruxes cheminParcouruHarry
                                                        cheminParcouruVoldemort carteHorcruxes HorcruxesDetruitesHarry 
                                                HorcruxesDetruitesVoldemort ArmesMap ArmesPossedeesHarry
