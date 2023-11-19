@@ -323,7 +323,6 @@
                                 (setq succ_voldemort (assoc caseVoldemort carte))
                                 (format t "~% Cases suivantes possibles pour Voldemort : ~{~% ~s~^~} ~% Entrer la case choisie: " succ_voldemort)
                                 (setq inputCase (read))
-                                (format t "read : ~a" inputCase)
                                 (let ((tmp (rechercheProfondeurVoldemort succ inputCase carte carteHorcruxes carteArmes descriptionHorcruxes :profondeur (+ profondeur 1) :cheminParcouruHarry cheminParcouruHarry :armesPossedeesHarry armesPossedeesHarry :horcruxesDetruitsHarry horcruxesDetruitsHarry :cheminParcouruVoldemort cheminParcouruVoldemort :armesPossedeesVoldemort armesPossedeesVoldemort :horcruxesDetruitsVoldemort horcruxesDetruitsVoldemort :affichage affichage)))
                                     (setf horcruxesDetruitsHarry (car tmp)) ;On remplace la liste plutôt que de la modifier en place pour traiter le cas où HorcruxesDetruits est vide (égale à NIL et donc sans car et cdr)
                                     (setf armesPossedeesHarry (cadr tmp))
@@ -463,6 +462,168 @@
 ; (rechercheprofondeur+ 1 map horcruxesMap armesMap horcruxesDescription :horcruxesDetruits NIL :profondeur 2)
 ; (rechercheprofondeur+ 1 map horcruxesMap armesMap horcruxesDescription :affichage "events")
 ; (rechercheprofondeur+ 1 map horcruxesMap armesMap horcruxesDescription :profondeurMax 12 :fluxSortie "test32.txt" :affichage "events")
+
+
+(defun rechercheProfondeurVoldemort+ (caseHarry caseVoldemort carte carteHorcruxes carteArmes descriptionHorcruxes &key (profondeur 0) (cheminParcouruHarry NIL) (armesPossedeesHarry NIL) (horcruxesDetruitsHarry NIL) (cheminParcouruVoldemort NIL) (armesPossedeesVoldemort NIL) (horcruxesDetruitsVoldemort NIL) (affichage "events") (profondeurMax 7) (fluxSortie T))
+;Effectue un parcours en profondeur de profondeur 7 au maximum et renvoie une liste composée de la liste des Horcruxes détruits et de la liste des méthodes de destruction récupérées
+
+    ;Vérification du type des arguments passés en paramètre
+    (cond
+        ((not (numberp caseHarry))(print "rechercheProfondeur : Erreur : La case de Harry doit être un nombre"))
+        ((not (numberp caseVoldemort))(print "rechercheProfondeur : Erreur : La case de Voldemort doit être un nombre"))
+        ((not (listp carte))(print "rechercheProfondeur : Erreur : La carte doit être une liste"))
+        ((not (listp carteHorcruxes))(print "rechercheProfondeur : Erreur : La carte des Horcruxes doit être une liste"))
+        ((not (listp carteArmes))(print "rechercheProfondeur : Erreur : La carte des méthodes de destruction (carteArme) doit être une liste"))
+        ((not (listp descriptionHorcruxes))(print "rechercheProfondeur : Erreur : La description des Horcruxes doit être sous forme de liste"))
+        ((not (numberp profondeur))(print "rechercheProfondeur : Erreur : La profondeur doit être un nombre"))
+        ((not (listp cheminParcouruHarry))(print "rechercheProfondeur : Erreur : Le chemin parcouru par Harry doit être sous forme de liste"))
+        ((not (listp horcruxesDetruitsHarry))(print "rechercheProfondeur : Erreur : Les Horcruxes détruits par Harry doivent être sous forme d'une liste"))
+        ((not (listp armesPossedeesHarry))(print "rechercheProfondeur : Erreur : Les méthodes de destruction (armes) possédées par Harry doivent être sous forme d'une liste"))
+        ((not (listp cheminParcouruVoldemort))(print "rechercheProfondeur : Erreur : Le chemin parcouru par Voldemort doit être sous forme de liste"))
+        ((not (listp horcruxesDetruitsVoldemort))(print "rechercheProfondeur : Erreur : Les Horcruxes détruits par Voldemort doivent être sous forme d'une liste"))
+        ((not (listp armesPossedeesVoldemort))(print "rechercheProfondeur : Erreur : Les méthodes de destruction (armes) possédées par Voldemort doivent être sous forme d'une liste"))
+        ((not (member affichage '("log" "log-arbre" "events" "events-arbre") :test #'string=))(print "rechercheProfondeur : Erreur : Le mode d'affichage doit être une chaîne de caractère valant log, log-arbre, events ou events-arbre"))
+        ((not (numberp profondeurMax))(print "rechercheProfondeur+ : Erreur : La profondeur maximale doit être un nombre"))
+        ((not (or (equal T fluxSortie) (stringp fluxSortie)))(print "rechercheProfondeur+ : Erreur : Le flux de sortie doit être le flux standard (T) ou un chemin de fichier représenté par une chaîne de caractère"))
+        (T (progn
+
+            ;ici on teste si Harry et VDM sont sur la même case et si VDM possède la méthode nécessaire pour tuer Harry (qui est un horcruxe)
+            (when (and (equal caseHarry  caseVoldemort) (member "Sortilège de la Mort" ArmesPossedeesVoldemort :test #'string=))  
+            ;Dans ce cas, #'string= indique que la comparaison doit être faite en utilisant l'égalité de chaînes de caractères.
+                (return-from rechercheProfondeurVoldemort (list "Harry Potter a été tué par Voldemort"))
+            ) 
+                ;ici on sort directement de la fonction grâce à return-from car le jeu est perdu, harry est mort
+
+            ;Traitement de la case active de Harry
+            ;Ajoute la case active au chemin parcouru
+            (if cheminParcouruHarry
+                (setf (cdr (last cheminParcouruHarry)) (list caseHarry))
+                (setf cheminParcouruHarry (list caseHarry))
+            );on rajoute la position actuelle de Harry à son chemin parcouru
+
+            ;Dans le mode events ou events-arbre, affichage de la case active
+            (cond 
+                ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTHarry est à la case ~s" profondeur caseHarry))
+                ((equal affichage "events")(afficher fluxSortie "~% ~% Harry est à la case ~s" caseHarry))
+            )
+            (let (
+                (armeCase (assoc caseHarry carteArmes)) ;Prend la valeur de la méthode de destruction présente sur la cases s'il y en a une, sinon NIL
+                (horcruxeCase (assoc caseHarry carteHorcruxes)) ;Prend la valeur de l'Horcruxe présent sur la cases s'il y en a un, sinon NIL
+                )
+                (if (and armeCase (not (member (cadr armeCase) armesPossedeesVoldemort)))
+                    (progn
+                        (push (cadr armeCase) armesPossedeesHarry)
+                        ;Dans le mode events ou events-arbre, affichage des méthodes de destruction mis à jour
+                        (cond 
+                            ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTSur cette case se trouve la Méthode : ~s~% ~vTMéthodes de Destruction récupérées : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr armeCase) profondeur armesPossedeesHarry profondeur)) 
+                            ((equal affichage "events")(afficher fluxSortie "~% ~% Sur cette case se trouve la Méthode : ~s~% Méthodes de Destruction récupérées :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr armeCase) armesPossedeesHarry))
+                        )
+                    )
+                )
+                (if (and horcruxeCase (not (member (cadr horcruxeCase) horcruxesDetruitsVoldemort)))
+                    (if (hasBonneArme (cadr horcruxeCase) armesPossedeesHarry descriptionHorcruxes)
+                        (progn
+                            (push (cadr horcruxeCase) horcruxesDetruitsHarry)
+                            ;Dans le mode events ou events-arbre, affichage des Horcruxes mis à jour
+                            (cond 
+                                ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTL'horcruxe présent sur cette case est : ~s~% ~vTHorcruxes détruits : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr horcruxeCase) profondeur horcruxesDetruitsHarry profondeur)) 
+                                ((equal affichage "events")(afficher fluxSortie "~% ~% L'horcruxe présent sur cette case est : ~s~% Horcruxes détruits :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr horcruxeCase) horcruxesDetruitsHarry))
+                            )
+                        )
+                        ;Si on ne possède pas la méthode de destruction requise, dans le mode events ou events-arbre, on l'indique
+                        (cond 
+                            ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTL'horcruxe présent sur cette case est : ~s~% ~vTLa méthode de destruction nécessaire n'est pas possédée !~% ~vTL'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% ~vTPassage à la case suivante..."  profondeur (cadr horcruxeCase) profondeur profondeur profondeur)) 
+                            ((equal affichage "events")(afficher fluxSortie "~% ~% L'horcruxe présent sur cette case est : ~s~% La méthode de destruction nécessaire n'est pas possédée !~% L'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% Passage à la case suivante..." (cadr horcruxeCase)))
+                        )
+                    )
+                )
+            )
+
+            ;Traitement de la case active de Voldemort
+            ;Ajoute la case active au chemin parcouru
+            (if cheminParcouruVoldemort
+                (setf (cdr (last cheminParcouruVoldemort)) (list caseVoldemort))
+                (setf cheminParcouruVoldemort (list caseVoldemort))
+            );cela revient à (push caseVoldemort cheminParcouruVoldemort)
+
+            ;Dans le mode events ou events-arbre, affichage de la case active
+            (cond 
+                ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTVoldemort est sur la case ~s" profondeur caseVoldemort))
+                ((equal affichage "events")(afficher fluxSortie "~% ~% Voldemort est sur la case ~s" caseVoldemort))
+            )
+            (let (
+                (armeCase (assoc caseVoldemort carteArmes)) ;Prend la valeur de la méthode de destruction présente sur la cases s'il y en a une, sinon NIL
+                (horcruxeCase (assoc caseVoldemort carteHorcruxes)) ;Prend la valeur de l'Horcruxe présent sur la cases s'il y en a un, sinon NIL
+                )
+                (if (and armeCase (and (not (member (cadr armeCase) armesPossedeesVoldemort)) (not (member (cadr armeCase) armesPossedeesHarry))))
+                    (progn
+                        (push (cadr armeCase) armesPossedeesVoldemort)
+                        ;Dans le mode events ou events-arbre, affichage des méthodes de destruction mis à jour
+                        (cond 
+                            ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTLa méthode présente sur la case de Voldemort est : ~s~% ~vTMéthodes de Destruction récupérées : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr armeCase) profondeur armesPossedeesVoldemort profondeur)) 
+                            ((equal affichage "events")(afficher fluxSortie "~% ~% La méthode présente sur la case de Voldemort est : ~s~% Méthodes de Destruction récupérées :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr armeCase) armesPossedeesVoldemort))
+                        )
+                    )
+                )
+                (if (and horcruxeCase (and (not (member (cadr horcruxeCase) horcruxesDetruitsVoldemort)) (not (member (cadr horcruxeCase) horcruxesDetruitsHarry))))
+                    (if (hasBonneArme (cadr horcruxeCase) armesPossedeesVoldemort descriptionHorcruxes)
+                        (progn
+                            (push (cadr horcruxeCase) horcruxesDetruitsVoldemort)
+                            ;Dans le mode events ou events-arbre, affichage des Horcruxes mis à jour
+                            (cond
+                                ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTL'Horcruxe présent sur la case de Voldemort est : ~s~% ~vTHorcruxes détruits : {~{~s~^, ~}}~%~% ~vTPassage à la case suivante..." profondeur (cadr horcruxeCase) profondeur horcruxesDetruitsVoldemort profondeur)) 
+                                ((equal affichage "events")(afficher fluxSortie "~% ~% L'Horcruxe présent sur la case de Voldemort est : ~s~% Horcruxes détruits :~{~% ~s~^~}~%~% Passage à la case suivante..." (cadr horcruxeCase) horcruxesDetruitsVoldemort))
+                            )
+                        )
+                        ;Si on ne possède pas la méthode de destruction requise, dans le mode events ou events-arbre, on l'indique
+                        (cond 
+                            ((equal affichage "events-arbre")(afficher fluxSortie "~% ~% ~vTL'Horcruxe présent sur la case de Voldemort est : ~s~% ~vTLa méthode de destruction nécessaire n'est pas possédée !~% ~vTL'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% ~vTPassage à la case suivante..."  profondeur (cadr horcruxeCase) profondeur profondeur profondeur)) 
+                            ((equal affichage "events")(afficher fluxSortie "~% ~% L'Horcruxe présent sur la case de Voldemort est : ~s~% La méthode de destruction nécessaire n'est pas possédée !~% L'Horcruxe n'a pas été détruite et ne pourra plus l'être !~%~% Passage à la case suivante..." (cadr horcruxeCase)))
+                        )
+                    )
+                )
+            )
+
+            ;Dans le mode log ou log-arbre, affichage de la case actuelle, des méthodes de destruction possédées et des Horcruxes détruits
+            (cond 
+                ((equal affichage "log-arbre")(afficher fluxSortie "~vT- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}} | Voldemort : Case ~a Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" profondeur caseHarry armespossedeesHarry horcruxesdetruitsHarry caseVoldemort armespossedeesVoldemort horcruxesdetruitsVoldemort))
+                ((equal affichage "log")(afficher fluxSortie "- ~a : Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}} | Voldemort : Case ~a Méthodes de destruction : {~{'~a'~^, ~}} Horcruxes détruits : {~{'~a'~^, ~}}~%" caseHarry armespossedeesHarry horcruxesdetruitsHarry caseVoldemort armespossedeesVoldemort horcruxesdetruitsVoldemort))
+            )
+
+            ;Vérification que la profondeur maximum n'a pas été atteinte et que tous les Horcruxes n'ont pas déjà été trouvés
+            (if (and (< profondeur profondeurMax) (< (length horcruxesDetruitsHarry) 6))
+                (let ((inputCase NIL)(succ_voldemort NIL))                    
+                    ;Si elle ne l'a pas été, recherche et traitement des successeurs valides (non déjà parcouru notamment)
+                    (dolist (succ (successeurs-valides caseHarry carte cheminParcouruHarry))
+                        (if (not (member succ cheminParcouruHarry)) ;Nouvelle vérification que la case n'a pas déjà été parcourue dans le cas où elle aurait été parcourue lors d'un appel imbriqué ayant eu lieu après la recherche de successeurs valides
+                            (progn
+                                ;On cherche les cases adjacentes à la case active de Voldemort et on demande à l'utilisateur la case à laquelle Voldemort doit se déplacer
+                                (setq succ_voldemort (assoc caseVoldemort carte))
+                                (format T "~% Cases suivantes possibles pour Voldemort : ~{~% ~s~^~} ~% Entrer la case choisie: " succ_voldemort)
+                                (setq inputCase (read))
+                                (let ((tmp (rechercheProfondeurVoldemort+ succ inputCase carte carteHorcruxes carteArmes descriptionHorcruxes :profondeur (+ profondeur 1) :cheminParcouruHarry cheminParcouruHarry :armesPossedeesHarry armesPossedeesHarry :horcruxesDetruitsHarry horcruxesDetruitsHarry :cheminParcouruVoldemort cheminParcouruVoldemort :armesPossedeesVoldemort armesPossedeesVoldemort :horcruxesDetruitsVoldemort horcruxesDetruitsVoldemort :affichage affichage :profondeurMax profondeurMax :fluxSortie fluxSortie)))
+                                    (setf horcruxesDetruitsHarry (car tmp)) ;On remplace la liste plutôt que de la modifier en place pour traiter le cas où HorcruxesDetruits est vide (égale à NIL et donc sans car et cdr)
+                                    (setf armesPossedeesHarry (cadr tmp))
+                                    (setf horcruxesDetruitsVoldemort (caddr tmp))
+                                    (setf armesPossedeesVoldemort (cadddr tmp))
+                                    (setf caseVoldemort (cadr (cdddr tmp)))
+                                )
+                            )
+                        )
+                    )
+                )
+                ;Sinon, on ne fait rien
+            )
+
+            ;Dans tous les cas, renvoie des horcruxes détruits et des méthodes de destruction possédées, qui ne servent pas pour les appels intermédiaires mais sont attendues pour le premier appel
+            (list horcruxesDetruitsHarry armesPossedeesHarry horcruxesDetruitsVoldemort armesPossedeesVoldemort caseVoldemort)
+        ))
+    )
+)
+
+;Tests de la fonction rechercheProfondeurVoldemort+
+;(rechercheprofondeurVoldemort+ 1 3 map horcruxesMap armesMap horcruxesDescription)
+;(rechercheprofondeurVoldemort+ 1 36 map horcruxesMap armesMap horcruxesDescription :affichage "log-arbre" :profondeurMax 9 :fluxSortie "test333.txt")
 
 
 (defun rechercheProfondeur++ (case carte carteHorcruxes carteArmes descriptionHorcruxes &key (profondeur 0) (cheminParcouru NIL) (armesPossedees NIL) (horcruxesDetruits NIL) (affichage "log-arbre") (profondeurMax 7) (fluxSortie T) (dumbledore NIL) (caseD 1) (fileD NIL) (cheminParcouruD NIL) (armesPossedeesD NIL) (horcruxesDetruitsD NIL) (modeD "collab"))
